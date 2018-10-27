@@ -2,10 +2,10 @@
 {
     public enum ConsoleCommand
     {
-        AddTask,
-        RemoveTask,
-        Show,
-        Save,
-        Load
+        addtask,
+        removetask,
+        show,
+        save,
+        load    
     }
 }
