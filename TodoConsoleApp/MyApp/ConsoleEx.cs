@@ -14,7 +14,8 @@ namespace MyApp
         public static void Write(string text, ConsoleColor color)
         {
             Console.ForegroundColor = color;
-            Console.Write(text);
+            Console.WriteLine(text);
+            Console.Write("->: ");
             Console.ResetColor();
         }
     }
