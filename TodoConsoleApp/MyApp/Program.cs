@@ -1,6 +1,8 @@
 ﻿
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 
 namespace MyApp
@@ -13,52 +15,107 @@ namespace MyApp
 
         private static void Main(string[] args)
         {
-            string command = "";
+            string[] command ;
             do
             {
+                //TODO: Komenda i parametry w jednej linni
                 ConsoleEx.Write($"Dostępne komendy: [{string.Join("/", Enum.GetNames(typeof(ConsoleCommand)))}]: ", ConsoleColor.Blue);
-                command = Console.ReadLine().ToLower();
-
-                if (Enum.GetNames(typeof(ConsoleCommand)).Contains(command.ToLower()))
+                command = Console.ReadLine().Split(' ');
+                if (command.Length == 1 || command.Length == 2)
                 {
-                    if (command == "addtask")
-                    {
-                        AddTask();
-                    }
-                    else if (command == "removetask")
-                    {
-                        RemoveTask(ListOfTasks);
-                    }
-                    else if (command == "show")
-                    {
-                        ListOfTasks.Sort((x, y) => x.StartDate.CompareTo(y.StartDate));
+                    command[0].ToLower();
 
-                        List<TaskModel> listOfImportant = new List<TaskModel>();
-                        List<TaskModel> listOfNotImportant = new List<TaskModel>();
-
-                        foreach (var task in ListOfTasks)
+                    if (Enum.GetNames(typeof(ConsoleCommand)).Contains(command[0]))
+                    {
+                        if (command[0] == "addtask")
                         {
-                            if (task.ActivityRank == true)
+                            AddTask();
+                        }
+                        else if (command[0] == "removetask")
+                        {
+                            RemoveTask(ListOfTasks);
+                        }
+                        else if (command[0] == "show")
+                        {
+                            Sort();
+                            ShowTasks(false);
+                        }
+                        else if (command[0] == "save")
+                        {
+                            Sort();
+                            SaveTasks();
+                        }
+                        else if (command[0] == "load")
+                        {
+                            if (File.Exists("Data.csv"))
                             {
-                                listOfImportant.Add(task);
+                                ListOfTasks.Clear();
+
+                                using (StreamReader sr = new StreamReader("Data.csv"))
+                                {
+                                    string[] lines = sr.ReadLine().Split(',');
+                                    foreach (string line in lines)
+                                    {
+                                        if (line != null && line.Length == 4)
+                                        {
+                                            ListOfTasks.Add(new TaskModel(Validate.HasValue(line[0]),Validate.HasValue(line[1]), Validate.HasValue(line[2]), Validate.HasValue(line[3]));
+                                        }
+                                    }
+                                   
+                                }
                             }
                             else
                             {
-                                listOfNotImportant.Add(task);
+                                ConsoleEx.WriteLine("Plik \"Dane.csv\" nie istnieje.", ConsoleColor.Red);
                             }
                         }
-
-                        ListOfTasks = listOfImportant.Concat(listOfNotImportant).ToList();
-
-                        ShowTasks(false);
+                    }
+                    else
+                    {
+                        ConsoleEx.WriteLine("Nieznana komenda.", ConsoleColor.Red);
                     }
                 }
                 else
                 {
-                    ConsoleEx.WriteLine("Nieznana komenda.", ConsoleColor.Red);
+                    ConsoleEx.WriteLine("Podano za dużo parametrów", ConsoleColor.Red);
                 }
 
-            } while (command != "exit");
+            } while (command[0] != "exit");
+        }
+
+        private static void SaveTasks()
+        {
+            using (StreamWriter sw = new StreamWriter("Data.csv"))
+            {
+                foreach (var task in ListOfTasks)
+                {
+                    sw.WriteLine(task.Export());
+                }
+                ConsoleEx.WriteLine("Pomyślnie zapisano zadania w pliku \"Data.csv\"", ConsoleColor.Green);
+                Process.Start("explorer.exe", ".");
+            }
+        }
+
+        private static void Sort()
+        {
+            ListOfTasks.Sort((x, y) => x.StartDate.CompareTo(y.StartDate));
+
+            List<TaskModel> listOfImportant = new List<TaskModel>();
+            List<TaskModel> listOfNotImportant = new List<TaskModel>();
+
+            foreach (var task in ListOfTasks)
+            {
+                if (task.ActivityRank == true)
+                {
+                    listOfImportant.Add(task);
+                }
+                else
+                {
+                    listOfNotImportant.Add(task);
+                }
+            }
+
+            ListOfTasks = listOfImportant.Concat(listOfNotImportant).ToList();
         }
 
         private static void ShowTasks(bool showIndex)

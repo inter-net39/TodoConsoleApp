@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System;
+using System.Text.RegularExpressions;
 
 namespace MyApp
 {
@@ -40,6 +41,38 @@ namespace MyApp
             }
 
             return false;
+        }
+
+        public static string HasValue(object obj)
+        {
+            if (obj is DateTime?)
+            {
+                if ((obj as DateTime?).HasValue)
+                {
+                    return (obj as DateTime?).Value.ToString("dd/MM/yyy");
+                }
+
+                return "";
+            }
+            if (obj is bool?)
+            {
+                if ((obj as bool?).HasValue)
+                {
+                    return (obj as bool?).Value.ToString();
+                }
+
+                return "";
+            }
+            if (obj is string)
+            {
+                if (string.IsNullOrEmpty(obj as string))
+                {
+                    return "";
+                }
+
+                return obj as string;
+            }
+            return "";
         }
     }
 }
