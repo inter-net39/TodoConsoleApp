@@ -24,7 +24,7 @@ namespace MyApp
 
         public static bool MatchBool(string text)
         {
-            if(text.ToLower().Contains("true") || text.ToLower().Contains("false"))
+            if(text.ToLower() =="true" || text.ToLower() == "false")
             {
                 return true;
             }
@@ -43,8 +43,9 @@ namespace MyApp
             return false;
         }
 
-        public static string HasValue(object obj)
+        public static string DoValue(object obj)
         {
+
             if (obj is DateTime?)
             {
                 if ((obj as DateTime?).HasValue)
@@ -54,6 +55,7 @@ namespace MyApp
 
                 return "";
             }
+
             if (obj is bool?)
             {
                 if ((obj as bool?).HasValue)
@@ -63,6 +65,7 @@ namespace MyApp
 
                 return "";
             }
+
             if (obj is string)
             {
                 if (string.IsNullOrEmpty(obj as string))

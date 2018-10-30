@@ -5,32 +5,56 @@ namespace MyApp
     public class TaskModel
     {
         public string Description { get; set; }
-        public DateTime StartDate { get; set; }
-
+        public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
-        public bool? AllDayAllDayActivity { get; set; } = false;
-        public bool? ActivityRank { get; set; } = false;
+        public bool AllDayAllDayActivity { get; set; }
+        public bool? ActivityRank { get; set; }
 
-        public TaskModel(string description, string startDate, string endDate, bool? activityRank)
+        public TaskModel(string description, string startDate, string endDate, string activityRank)
         {
+
+            //TODO: DODAĆ TUTAJ VALIDACJE???
+
+            //Description = bez zmian z argumentem
             Description = description;
-            StartDate = DateTime.Parse(startDate);
-            //
-            if (!string.IsNullOrEmpty(endDate))
+            
+            //StrartDate = Jest po validacji.
+            if (Validate.MatchDate(startDate))
             {
-                EndDate = DateTime.Parse(endDate);
+                StartDate = DateTime.Parse(startDate);
             }
             else
             {
-                AllDayAllDayActivity = true;
+                StartDate = null;
             }
-            ///
-            ActivityRank = activityRank;
+         
+
+            //EndDate = Jeżel EndDate niezdefiniowany to Całodniowe
+            //TODO:VAL
+            if (string.IsNullOrEmpty(endDate) || !Validate.MatchDate(endDate))
+            {
+                AllDayAllDayActivity = true;
+                EndDate = null;
+            }
+            else
+            {
+                EndDate = DateTime.Parse(endDate);
+            }
+
+            //ActivityRank
+            if (Validate.MatchBool(activityRank))
+            {
+                ActivityRank = bool.Parse(activityRank);
+            }
+            else
+            {
+                ActivityRank = null;
+            }
         }
 
         public string Export()
         {
-            return $"{Description},{Validate.HasValue(StartDate)},{Validate.HasValue(EndDate)},{Validate.HasValue(AllDayAllDayActivity)},{Validate.HasValue(ActivityRank)}";
+            return $"{Description},{Validate.DoValue(StartDate)},{Validate.DoValue(EndDate)},{Validate.DoValue(AllDayAllDayActivity)},{Validate.DoValue(ActivityRank)}";
         }
     }
 }

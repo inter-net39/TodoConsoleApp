@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Windows;
 
 namespace MyApp
 {
@@ -18,8 +19,7 @@ namespace MyApp
             string[] command ;
             do
             {
-                //TODO: Komenda i parametry w jednej linni
-                ConsoleEx.Write($"Dostępne komendy: [{string.Join("/", Enum.GetNames(typeof(ConsoleCommand)))}]: ", ConsoleColor.Blue);
+                ConsoleEx.Write($"Dostępne komendy: [{string.Join("/", Enum.GetNames(typeof(ConsoleCommand)))+"/exit"}]: ", ConsoleColor.Blue);
                 command = Console.ReadLine().Split(' ');
                 if (command.Length == 1 || command.Length == 2)
                 {
@@ -47,27 +47,7 @@ namespace MyApp
                         }
                         else if (command[0] == "load")
                         {
-                            if (File.Exists("Data.csv"))
-                            {
-                                ListOfTasks.Clear();
-
-                                using (StreamReader sr = new StreamReader("Data.csv"))
-                                {
-                                    string[] lines = sr.ReadLine().Split(',');
-                                    foreach (string line in lines)
-                                    {
-                                        if (line != null && line.Length == 4)
-                                        {
-                                            ListOfTasks.Add(new TaskModel(Validate.HasValue(line[0]),Validate.HasValue(line[1]), Validate.HasValue(line[2]), Validate.HasValue(line[3]));
-                                        }
-                                    }
-                                   
-                                }
-                            }
-                            else
-                            {
-                                ConsoleEx.WriteLine("Plik \"Dane.csv\" nie istnieje.", ConsoleColor.Red);
-                            }
+                            LoadTasks();
                         }
                     }
                     else
@@ -81,6 +61,67 @@ namespace MyApp
                 }
 
             } while (command[0] != "exit");
+        }
+
+        private static void LoadTasks()
+        {
+            ConsoleEx.WriteLine("Wybierz plik .csv do wczytania:", ConsoleColor.Magenta);
+            foreach (var file in Directory.GetFiles("."))
+            {
+                ConsoleEx.WriteLine(Path.GetFileName(file), ConsoleColor.Yellow);
+            }
+            ConsoleEx.Write("", ConsoleColor.Blue);
+            string myPath = Console.ReadLine();
+            if (myPath != null && myPath.Contains('.'))
+            {
+                if (myPath.Split('.').Length == 2 && myPath.Split('.')[1].ToLower() == "csv")
+                {
+                    if (File.Exists(myPath))
+                    {
+                        ListOfTasks.Clear();
+
+                        using (StreamReader sr = new StreamReader(myPath))
+                        {
+                            List<string[]> param = new List<string[]>();
+
+                            string fileLine;
+                            while ((fileLine = sr.ReadLine()) != null)
+                            {
+                                param.Add(fileLine.Split(','));
+                            }
+
+                            foreach (var line in param)
+                            {
+                                if (line != null && line.Length == 5)
+                                {
+                                    ListOfTasks.Add(new TaskModel(Validate.DoValue(line[0]),
+                                        Validate.DoValue(line[1]), Validate.DoValue(line[2]),
+                                        Validate.DoValue(line[3])));
+                                }
+                                else
+                                {
+                                    ConsoleEx.WriteLine(
+                                        $"Linnia [{line}] zawiera niepoprawny format danych.",
+                                        ConsoleColor.Red);
+                                }
+                            }
+
+                        }
+                    }
+                    else
+                    {
+                        ConsoleEx.WriteLine($"Plik {myPath} nie istnieje.", ConsoleColor.Red);
+                    }
+                }
+                else
+                {
+                    ConsoleEx.WriteLine("Nieprawidłowy format - brak formatu csv", ConsoleColor.Red);
+                }
+            }
+            else
+            {
+                ConsoleEx.WriteLine("Nieprawidłowy format - brak kropki", ConsoleColor.Red);
+            }
         }
 
         private static void SaveTasks()
@@ -98,7 +139,7 @@ namespace MyApp
 
         private static void Sort()
         {
-            ListOfTasks.Sort((x, y) => x.StartDate.CompareTo(y.StartDate));
+            ListOfTasks.Sort((x, y) => x.StartDate.Value.CompareTo(y.StartDate.Value));
 
             List<TaskModel> listOfImportant = new List<TaskModel>();
             List<TaskModel> listOfNotImportant = new List<TaskModel>();
@@ -128,8 +169,11 @@ namespace MyApp
                 ConsoleEx.WriteLine(string.Empty.PadLeft(longestText + 80, '▒'), ConsoleColor.Yellow);
                 for (int x = 0; x < ListOfTasks.Count; x++)
                 {
-
-                    ConsoleEx.WriteLine($"{x+"|".PadLeft(5)}{(ListOfTasks[x].Description+"|").PadLeft(longestText + 5)}{(ListOfTasks[x].StartDate.ToString("dd/MM/yyyy") + "|").PadLeft(20)}{(ListOfTasks[x].EndDate.Value.ToString("dd/MM/yyyy") + "|").PadLeft(20)}{(ListOfTasks[x].AllDayAllDayActivity + "|").PadLeft(20)}{(ListOfTasks[x].ActivityRank + "|").PadLeft(10)}", ConsoleColor.DarkYellow);
+                    ConsoleEx.WriteLine($"{x+"|".PadLeft(5)}{(Validate.DoValue(ListOfTasks[x].Description) + "|").PadLeft(longestText + 5)}" +
+                                        $"{(Validate.DoValue(ListOfTasks[x].StartDate) + "|").PadLeft(20)}" +
+                                        $"{(Validate.DoValue(ListOfTasks[x].EndDate) + "|").PadLeft(20)}" +
+                                        $"{(Validate.DoValue(ListOfTasks[x].AllDayAllDayActivity) + "|").PadLeft(20)}" +
+                                        $"{(Validate.DoValue(ListOfTasks[x].ActivityRank) + "|").PadLeft(10)}", ConsoleColor.DarkYellow);
                 }
             }
             else
@@ -139,7 +183,11 @@ namespace MyApp
 
                 for (int x = 0; x < ListOfTasks.Count; x++)
                 {
-                    ConsoleEx.WriteLine($"{(ListOfTasks[x].Description + "|").PadLeft(longestText + 5)}{(ListOfTasks[x].StartDate.ToString("dd/MM/yyyy") + "|").PadLeft(20)}{(ListOfTasks[x].EndDate.Value.ToString("dd/MM/yyyy") + "|").PadLeft(20)}{(ListOfTasks[x].AllDayAllDayActivity + "|").PadLeft(20)}{(ListOfTasks[x].ActivityRank + "|").PadLeft(10)}", ConsoleColor.DarkYellow);
+                    ConsoleEx.WriteLine($"{(Validate.DoValue(ListOfTasks[x].Description) + "|").PadLeft(longestText + 5)}" +
+                                        $"{(Validate.DoValue(ListOfTasks[x].StartDate) + "|").PadLeft(20)}" +
+                                        $"{(Validate.DoValue(ListOfTasks[x].EndDate) + "|").PadLeft(20)}" +
+                                        $"{(Validate.DoValue(ListOfTasks[x].AllDayAllDayActivity) + "|").PadLeft(20)}" +
+                                        $"{(Validate.DoValue(ListOfTasks[x].ActivityRank) + "|").PadLeft(10)}", ConsoleColor.DarkYellow);
                 }
             }
         }
@@ -221,7 +269,7 @@ namespace MyApp
                 }
                 else if (Validate.MatchBool(line[2]))                //To zadanie całodniowe
                 {
-                    ListOfTasks.Add(new TaskModel(line[0], line[1], null, bool.Parse(line[2].ToLower())));
+                    ListOfTasks.Add(new TaskModel(line[0], line[1], null, line[2]));
                     ConsoleEx.WriteLine("Pomyślnie dodano zadaie całodniowe.", ConsoleColor.Green);
                 }
                 else
@@ -237,10 +285,14 @@ namespace MyApp
                     if (string.IsNullOrEmpty(line[3]))                 // gdy jako 4 parametr pusty ciagznakow
                     {
                         ListOfTasks.Add(new TaskModel(line[0], line[1], line[2], null));
+                        ConsoleEx.WriteLine("Pomyślnie dodano.", ConsoleColor.Green);
+
                     }
                     else if (Validate.MatchBool(line[3]))
                     {
-                        ListOfTasks.Add(new TaskModel(line[0], line[1], line[2], bool.Parse(line[3])));
+                        ListOfTasks.Add(new TaskModel(line[0], line[1], line[2], line[3]));
+                        ConsoleEx.WriteLine("Pomyślnie dodano.", ConsoleColor.Green);
+
                     }
                     else
                     {
