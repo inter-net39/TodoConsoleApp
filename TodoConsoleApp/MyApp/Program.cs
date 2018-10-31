@@ -62,7 +62,7 @@ namespace MyApp
 
             } while (command[0] != "exit");
         }
-
+        //TODO: MAKE STATIC
         private static void LoadTasks()
         {
             ConsoleEx.WriteLine("Wybierz plik .csv do wczytania:", ConsoleColor.Magenta);
