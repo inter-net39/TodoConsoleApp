@@ -13,69 +13,45 @@ namespace MyApp
 
         public static bool MatchDate(string text)
         {
-            Match match = _regexDate.Match(text);
-            if (match.Success)
+            if (!string.IsNullOrEmpty(text))
             {
-                return true;
+                Match match = _regexDate.Match(text);
+                if (match.Success)
+                {
+                    return true;
+                }
+                return false;
             }
-
             return false;
         }
 
         public static bool MatchBool(string text)
         {
-            if(text.ToLower() =="true" || text.ToLower() == "false")
+            if (!string.IsNullOrEmpty(text))
             {
-                return true;
+                if (text.ToLower() == "true" || text.ToLower() == "false")
+                {
+                    return true;
+                }
+                return false;
             }
-
             return false;
         }
 
         public static bool MatchInteger(string text)
         {
-            Match match = _regexInteger.Match(text);
-            if (match.Success)
+            if (!string.IsNullOrEmpty(text))
             {
-                return true;
+                Match match = _regexInteger.Match(text);
+                if (match.Success)
+                {
+                    return true;
+                }
+                return false;
             }
-
             return false;
         }
 
-        public static string DoValue(object obj)
-        {
-
-            if (obj is DateTime?)
-            {
-                if ((obj as DateTime?).HasValue)
-                {
-                    return (obj as DateTime?).Value.ToString("dd/MM/yyy");
-                }
-
-                return "";
-            }
-
-            if (obj is bool?)
-            {
-                if ((obj as bool?).HasValue)
-                {
-                    return (obj as bool?).Value.ToString();
-                }
-
-                return "";
-            }
-
-            if (obj is string)
-            {
-                if (string.IsNullOrEmpty(obj as string))
-                {
-                    return "";
-                }
-
-                return obj as string;
-            }
-            return "";
-        }
+        
     }
 }
